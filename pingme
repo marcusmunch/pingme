@@ -1,16 +1,28 @@
 #!/usr/bin/python3
 
+import argparse
 import sys
 import urllib.parse
 import urllib.request
 
 APPLICATION = "pingme"
 PROWL_API_KEY = "your_api_key_here"
+MESSAGE = ""
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-t", help="Title for your notification")
+parser.add_argument("message", nargs=argparse.REMAINDER)
+args = parser.parse_args()
+
+if args.message:
+    MESSAGE = " ".join(args.message)
+if args.t:
+    APPLICATION = args.t
 
 def get_input():
     if not sys.stdin.isatty():
 
-        if sys.argv[1:]:
+        if MESSAGE:
             print("Error: Both arguments and pipe input were received")
             exit(1)
         else:
@@ -20,22 +32,27 @@ def get_input():
             user_input = line.rstrip('\n')
             print('Read from stdin: "{}"!'.format(user_input))
     else:
-        user_input = " ".join(sys.argv[1:])
+        user_input = MESSAGE
 
     return user_input
 
 
-def prowl(message, apikey=PROWL_API_KEY, application=APPLICATION, user_input=get_input()):
+def prowl(message, apikey=PROWL_API_KEY, application=APPLICATION):
+    print("Sending message from '{}': {}".format(application, message))
+
     params = {"apikey": PROWL_API_KEY,
               "application": application,
-              "description": user_input}
+              "description": message}
     encoded_params = urllib.parse.urlencode(params).encode()
 
     req = urllib.request.Request("https://api.prowlapp.com/publicapi/add", data=encoded_params, method="POST")
     urllib.request.urlopen(req)
 
 def main():
-    prowl(message=get_input())
+    MESSAGE = get_input()
+
+    prowl(message=MESSAGE)
+
 
 if __name__ == "__main__":
     main()
