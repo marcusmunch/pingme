@@ -23,7 +23,7 @@ def get_input():
     if not sys.stdin.isatty():
 
         if MESSAGE:
-            print("Error: Both arguments and pipe input were received")
+            sys.stderr.write("Error: Both arguments and pipe input were received\n")
             exit(1)
         else:
             user_input = " ".join(sys.argv[1:])
