@@ -2,6 +2,7 @@
 
 import argparse
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -46,12 +47,22 @@ def prowl(message, apikey=PROWL_API_KEY, application=APPLICATION):
     encoded_params = urllib.parse.urlencode(params).encode()
 
     req = urllib.request.Request("https://api.prowlapp.com/publicapi/add", data=encoded_params, method="POST")
-    urllib.request.urlopen(req)
+    try:
+        urllib.request.urlopen(req)
+        print("Message sent!")
+    except:
+        raise
 
 def main():
     MESSAGE = get_input()
-
-    prowl(message=MESSAGE)
+    try:
+        prowl(message=MESSAGE)
+        print('Sent message "{}"'.format(MESSAGE))
+    except urllib.error.HTTPError as err:
+        if err.code == 401:
+            sys.stderr.write("Error: API key not authorized!\n")
+        else:
+            raise
 
 
 if __name__ == "__main__":
